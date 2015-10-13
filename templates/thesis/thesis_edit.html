@@ -82,34 +82,61 @@
                 </div>
             </form>
             <div><a href="/"><button class="btn-danger btn">Cancel</button></a></div>
+
+        <div class="container" id="comment_section">
+
+              {% for greeting in greetings %}
+              <div class="row">
+                {% if greeting.author %}
+                  <b>{{ greeting.author.cr_email }}
+                    {% if user and user.user_id() == greeting.author.cr_identity %}
+                      (You)
+                    {% endif %}
+                  </b> wrote:
+                {% else %}
+                 An anonymous person wrote:
+                {% endif %}
+                <blockquote>{{ greeting.content }}</blockquote>
+              </div>
+              {% endfor %}
+
+              <form action="/sign?guestbook_name={{ guestbook_name }}" method="post">
+                <input value = "{{thesis.key.id()}}" name="thesis_id" style="visibility:hidden">
+                <div><textarea name="content" class="input-block-level" rows="3"></textarea></div>
+                <div><input type="submit" class="btn btn-large btn-primary" onclick="setItem()" value="Enter Comment"></div>
+              </form>
+            <hr>
+            </div>
+            <form id="gbook">
+                <input value = "{{thesis.key.id()}}" name="guestbook_name">
+                <input type="submit" value="Show Comments" onclick="setItem()" id="switch_btn">
+            </form>
         </div>
         <script type="text/javascript" src="/static/js/jquery-1.11.3.js"></script>
         <script>
-        //     function errorMsg()
-        //     {
-        //         alert("For faculty users only...");
-        //     }   
-        //     function setItem()
-        //     {
-        //         localStorage.setItem("book",25)
-        //     }
-        //     $(document).ready(function(){
-        //         if (localStorage.getItem("book") < 20)
-        //         {
-        //             localStorage.setItem("book",10)
-        //         }
+            function setItem()
+                {
+                    localStorage.setItem("book",25)
+                }
+            $(document).ready(function(){
+                if (localStorage.getItem("book") < 20)
+                {
+                    localStorage.setItem("book",10)
+                }
 
-        //         if (localStorage.getItem("book") == 10)
-        //         {
-        //             $('#comment_section').hide();
-        //         }
-        //         else
-        //         {
-        //             $('#comment_section').show();
-        //             localStorage.setItem("book",10)
-        //         }
-        //     })
-        // </script>
+                if (localStorage.getItem("book") == 10)
+                {
+                    console.log("buhehee")
+                    $('#comment_section').hide();
+                }
+                else
+                {
+                    console.log("jupak")
+                    $('#comment_section').show();
+                    localStorage.setItem("book",10)
+                }
+            })
+        </script>
         <script type="text/javascript" src="/static/js/myjs.js"></script>
         <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
     </body>

@@ -379,103 +379,97 @@ class  DeleteUniversity(webapp2.RequestHandler):
             self.response.write("<script>alert('For faculty users only...');</script>")
             self.response.write("Go back <a href='/'>home</a>.")
 
-class APIThesisList(webapp2.RequestHandler):
-    def post(self):
-            thesis_list = []
-            if self.request.get('year'):
-                if self.request.get('year').isdigit():
-                    filt_year = int(self.request.get('year'))
-                else:
-                    filt_year = None
-            else:
-                filt_year = None
-
-            filt_adviser = self.request.get('adviser')
-            logging.info(filt_adviser)
-            if filt_adviser:
-                x = filt_adviser.split(' ')
-                filt_adv_fname = x[0]
-                f = Faculty.query(Faculty.f_first_name == filt_adv_fname).fetch()
-                for faculty in f:
-                    filt_adv_key = faculty.key
-            else:
-                filt_adv_key = None
-
-            filt_university = self.request.get('university')
-
-            if filt_university:
-                filt_univ = University.query(University.u_name == filt_university).get()
-                filt_col = College.query(College.c_university_key == filt_univ.key).get()
-                filt_dept = Department.query(Department.d_college_key == filt_col.key).get()
-            else:
-                filt_dept = None
-
-            if filt_year and filt_university and filt_adv_key:
-                thesis = Thesis.query(Thesis.thesis_year == filt_year,Thesis.thesis_department_key == filt_dept.key,Thesis.thesis_adviser_key == filt_adv_key).order(+Thesis.thesis_title).fetch()
-            elif filt_year and filt_university:
-                thesis = Thesis.query(Thesis.thesis_year == filt_year,Thesis.thesis_department_key == filt_dept.key).order(+Thesis.thesis_title).fetch()
-            elif filt_year and filt_adv_key:
-                thesis = Thesis.query(Thesis.thesis_year == filt_year,Thesis.thesis_adviser_key == filt_adv_key).order(+Thesis.thesis_title).fetch()
-            elif filt_university and filt_adv_key:
-                thesis = Thesis.query(Thesis.thesis_department_key == filt_dept.key,Thesis.thesis_adviser_key == filt_adv_key).order(+Thesis.thesis_title).fetch()
-            elif filt_year:
-                thesis = Thesis.query(Thesis.thesis_year == filt_year).order(+Thesis.thesis_title).fetch()
-            elif filt_adv_key:
-                thesis = Thesis.query(Thesis.thesis_adviser_key == filt_adv_key).order(+Thesis.thesis_title).fetch()
-            elif filt_university:
-                thesis = Thesis.query(Thesis.thesis_department_key == filt_dept.key).order(+Thesis.thesis_title).fetch()
-            else:
-                thesis = Thesis.query().order(+Thesis.thesis_title).fetch()
-
-            for thes in thesis:
-                d = ndb.Key('Department',thes.thesis_department_key.id())
-                dept = d.get()
-                dept_name = dept.d_name
-                
-                c = ndb.Key('College',dept.d_college_key.id())
-                col = c.get()
-                col_name = col.c_name
-
-                u = ndb.Key('University',col.c_university_key.id())
-                univ = u.get()
-                univ_name = univ.u_name
-
-                creator = thes.thesis_created_by.get()
-
-                if thes.thesis_adviser_key:
-                    adv = thes.thesis_adviser_key.get()
-                    adv_fname = adv.f_first_name
-                    adv_lname = adv.f_last_name
-                else:
-                    adv = None
-                    adv_fname = None
-                    adv_lname = None
-
-                thesis_list.append({
-                    'self_id':thes.key.id(),
-                    'thesis_title':thes.thesis_title,
-                    'thesis_year':thes.thesis_year,
-                    'f_first_name':adv_fname,
-                    'f_last_name':adv_lname,
-                    'thesis_creator_fname':creator.cr_first_name,
-                    'thesis_creator_lname':creator.cr_last_name,
-                    })
-
-            if thesis_list:
-                response = {
-                    'status':'OK',
-                    'data':thesis_list
-                }
-                self.response.headers['Content-Type'] = 'application/json'
-                self.response.out.write(json.dumps(response))
-            else:
-                response = {
-                    'status':'Error',
-                }
-                self.response.headers['Content-Type'] = 'application/json'
-                self.response.out.write(json.dumps(response))
-
 class APIHandlerPage(webapp2.RequestHandler):
+    def get(self):
+        thesis_list = []
+        if self.request.get('year').isdigit():
+            filt_year = int(self.request.get('year'))
+        else:
+            filt_year = None
+        filt_adviser = self.request.get('adviser')
+
+        if filt_adviser:
+            x = filt_adviser.split(' ')
+            filt_adv_fname = x[0]
+            f = Faculty.query(Faculty.f_first_name == filt_adv_fname).fetch()
+            for faculty in f:
+                filt_adv_key = faculty.key
+        else:
+            filt_adv_key = None
+
+        filt_university = self.request.get('university')
+
+        if filt_university:
+            filt_univ = University.query(University.u_name == filt_university).get()
+            filt_col = College.query(College.c_university_key == filt_univ.key).get()
+            filt_dept = Department.query(Department.d_college_key == filt_col.key).get()
+        else:
+            filt_dept = None
+
+        if filt_year and filt_university and filt_adv_key:
+            thesis = Thesis.query(Thesis.thesis_year == filt_year,Thesis.thesis_department_key == filt_dept.key,Thesis.thesis_adviser_key == filt_adv_key).order(+Thesis.thesis_title).fetch()
+        elif filt_year and filt_university:
+            thesis = Thesis.query(Thesis.thesis_year == filt_year,Thesis.thesis_department_key == filt_dept.key).order(+Thesis.thesis_title).fetch()
+        elif filt_year and filt_adv_key:
+            thesis = Thesis.query(Thesis.thesis_year == filt_year,Thesis.thesis_adviser_key == filt_adv_key).order(+Thesis.thesis_title).fetch()
+        elif filt_university and filt_adv_key:
+            thesis = Thesis.query(Thesis.thesis_department_key == filt_dept.key,Thesis.thesis_adviser_key == filt_adv_key).order(+Thesis.thesis_title).fetch()
+        elif filt_year:
+            thesis = Thesis.query(Thesis.thesis_year == filt_year).order(+Thesis.thesis_title).fetch()
+        elif filt_adv_key:
+            thesis = Thesis.query(Thesis.thesis_adviser_key == filt_adv_key).order(+Thesis.thesis_title).fetch()
+        elif filt_university:
+            thesis = Thesis.query(Thesis.thesis_department_key == filt_dept.key).order(+Thesis.thesis_title).fetch()
+        else:
+            thesis = Thesis.query().order(+Thesis.thesis_title).fetch()
+
+        for thes in thesis:
+            d = ndb.Key('Department',thes.thesis_department_key.id())
+            dept = d.get()
+            dept_name = dept.d_name
+            
+            c = ndb.Key('College',dept.d_college_key.id())
+            col = c.get()
+            col_name = col.c_name
+
+            u = ndb.Key('University',col.c_university_key.id())
+            univ = u.get()
+            univ_name = univ.u_name
+
+            creator = thes.thesis_created_by.get()
+
+            if thes.thesis_adviser_key:
+                adv = thes.thesis_adviser_key.get()
+                adv_fname = adv.f_first_name
+                adv_lname = adv.f_last_name
+            else:
+                adv = None
+                adv_fname = None
+                adv_lname = None
+
+            thesis_list.append({
+                'self_id':thes.key.id(),
+                'thesis_title':thes.thesis_title,
+                'thesis_year':thes.thesis_year,
+                'f_first_name':adv_fname,
+                'f_last_name':adv_lname,
+                'thesis_creator_fname':creator.cr_first_name,
+                'thesis_creator_lname':creator.cr_last_name,
+                })
+
+        if thesis_list:
+            response = {
+                'status':'OK',
+                'data':thesis_list
+            }
+            self.response.headers['Content-Type'] = 'application/json'
+            self.response.out.write(json.dumps(response))
+        else:
+            response = {
+                'status':'Error',
+            }
+            self.response.headers['Content-Type'] = 'application/json'
+            self.response.out.write(json.dumps(response))
     def post(self):
         th = Thesis.query(Thesis.thesis_title == self.request.get('thesis_title')).fetch()
         thesis = Thesis()
@@ -581,69 +575,65 @@ class  ThesisEdit(webapp2.RequestHandler):
         url = users.create_logout_url(self.request.uri)
         url_linktext = 'Logout'
 
-        if user:
-            auth = User.query(User.cr_email == user.email()).get()
-            authority = auth.cr_authority
-            guestbook_name = self.request.get('guestbook_name',
-                                              DEFAULT_GUESTBOOK_NAME)
-            # greetings_query = Greeting.query(
-            #     ancestor=guestbook_key(guestbook_name)).order(-Greeting.date)
-            # greetings = greetings_query.fetch(10)
+        auth = User.query(User.cr_email == user.email()).get()
+        authority = auth.cr_authority
+        guestbook_name = self.request.get('guestbook_name',
+                                          DEFAULT_GUESTBOOK_NAME)
+        greetings_query = Greeting.query(
+            ancestor=guestbook_key(guestbook_name)).order(-Greeting.date)
+        greetings = greetings_query.fetch(10)
+        s = Thesis.get_by_id(int(th_id))
+        d = ndb.Key('Department',s.thesis_department_key.id())
+        dept = d.get()
+        dept_name = dept.d_name
+        
+        c = ndb.Key('College',dept.d_college_key.id())
+        col = c.get()
+        col_name = col.c_name
 
-            s = Thesis.get_by_id(int(th_id))
-            d = ndb.Key('Department',s.thesis_department_key.id())
-            dept = d.get()
-            dept_name = dept.d_name
-            
-            c = ndb.Key('College',dept.d_college_key.id())
-            col = c.get()
-            col_name = col.c_name
+        u = ndb.Key('University',col.c_university_key.id())
+        univ = u.get()
+        univ_name = univ.u_name
 
-            u = ndb.Key('University',col.c_university_key.id())
-            univ = u.get()
-            univ_name = univ.u_name
-
-            if s.thesis_adviser_key:
-                adv = s.thesis_adviser_key.get()
-            else:
-                adv = None
-
-            studs = {}
-            num_proponents = len(s.thesis_student_keys)
-            for i in range(0,num_proponents):
-                studs[i] = s.thesis_student_keys[i].get()
-
-            ###code for related thesis#########
-            #get keywords from thesis title
-            keywords = re.sub('[^\w]', ' ', s.thesis_title).split()
-            #words to be removed
-            not_noun = ['is','and','for','s','are','in','on','of','if','with','as','a','for']
-            for i in range(len(not_noun)):
-                if not_noun[i] in keywords:
-                    keywords.remove(not_noun[i])
-            i = 0
-            template_data = {
-                'university':univ_name,
-                'college':col_name,
-                'department':dept_name,
-                'num_proponents':num_proponents,
-                'thesis': s,
-                'i':i,
-                'guestbook_name': urllib.quote_plus(guestbook_name),
-                # 'greetings':greetings,
-                'adv': adv,
-                'studs': studs,
-                'user': user,
-                'url': url,
-                'url_linktext': url_linktext,
-                'keywords':keywords,
-                'authority':authority
-            }
-
-            template = JINJA_ENVIRONMENT.get_template('templates/thesis/thesis_edit.html')
-            self.response.write(template.render(template_data))
+        if s.thesis_adviser_key:
+            adv = s.thesis_adviser_key.get()
         else:
-            self.redirect('/login')
+            adv = None
+
+        studs = {}
+        num_proponents = len(s.thesis_student_keys)
+        for i in range(0,num_proponents):
+            studs[i] = s.thesis_student_keys[i].get()
+
+        ###code for related thesis#########
+        #get keywords from thesis title
+        keywords = re.sub('[^\w]', ' ', s.thesis_title).split()
+        #words to be removed
+        not_noun = ['is','and','for','s','are','in','on','of','if','with','as','a','for']
+        for i in range(len(not_noun)):
+            if not_noun[i] in keywords:
+                keywords.remove(not_noun[i])
+        i = 0
+        template_data = {
+            'university':univ_name,
+            'college':col_name,
+            'department':dept_name,
+            'num_proponents':num_proponents,
+            'thesis': s,
+            'i':i,
+            'guestbook_name': urllib.quote_plus(guestbook_name),
+            'greetings':greetings,
+            'adv': adv,
+            'studs': studs,
+            'user': user,
+            'url': url,
+            'url_linktext': url_linktext,
+            'keywords':keywords,
+            'authority':authority
+        }
+
+        template = JINJA_ENVIRONMENT.get_template('templates/thesis/thesis_edit.html')
+        self.response.write(template.render(template_data))
     def post(self,th_id):
         user = users.get_current_user()
         url = users.create_logout_url(self.request.uri)
@@ -1621,38 +1611,25 @@ class APIThesisFinder(webapp2.RequestHandler):
 
 class Guestbook(webapp2.RequestHandler):
     def post(self):
-        user = users.get_current_user()
-        url = users.create_logout_url(self.request.uri)
-        url_linktext = 'Logout'
-        if user:
-            auth = User.query(User.cr_email == user.email()).get()
-            authority = auth.cr_authority
-            if authority == 'faculty':
-                url_id = self.request.get('thesis_id')
-                logging.info(url_id)
-                guestbook_name = self.request.get('guestbook_name',
-                                                  DEFAULT_GUESTBOOK_NAME)
-                greeting = Greeting(parent=guestbook_key(guestbook_name))
-                if users.get_current_user():
-                    greeting.author = User(
-                            cr_identity=users.get_current_user().user_id(),
-                            cr_email=users.get_current_user().email())
-                greeting.content = self.request.get('content')
-                greeting.put()
-                query_params = {'guestbook_name': guestbook_name}
-                self.redirect('/thesis/edit/'+url_id+'?' + urllib.urlencode(query_params))
-            else:
-                self.response.write("<script>alert('For faculty users only...');</script>")
-                self.response.write("Go back <a href='/'>home</a>.")
-        else:
-            self.redirect('/login')
+        url_id = self.request.get('thesis_id')
+        logging.info(url_id)
+        guestbook_name = self.request.get('guestbook_name',
+                                          DEFAULT_GUESTBOOK_NAME)
+        greeting = Greeting(parent=guestbook_key(guestbook_name))
+        if users.get_current_user():
+            greeting.author = User(
+                    cr_identity=users.get_current_user().user_id(),
+                    cr_email=users.get_current_user().email())
+        greeting.content = self.request.get('content')
+        greeting.put()
+        query_params = {'guestbook_name': guestbook_name}
+        self.redirect('/thesis/edit/'+url_id+'?' + urllib.urlencode(query_params))
 
 app = webapp2.WSGIApplication([
     ('/', MainPage),
     ('/login',LoginPage),
     ('/register',RegisterPage),
     ('/api/handler', APIHandlerPage),
-    ('/api/filter', APIThesisList),
     ('/api/find_thesis', APIThesisFinder),
     ('/api/getRelated', RelatedThesAPI),
     ('/api/searcher', SearcherAPI),
