@@ -1,0 +1,57 @@
+
+#rel_th_container {
+	position: relative;
+	float: right;
+	height: auto;
+	width: 500px;
+	border: rgb(200,150,150) solid 1px;
+	list-style-type: none;
+}
+
+p.label {
+	color:#aaa;
+}
+
+input.profile_details {
+	display: block;
+}
+
+.filt {
+	position: relative;
+	margin: 5px 0 5px 5px;
+	width: 30%;
+	height: auto;
+}
+
+.create {
+	width: 40%;
+	margin: 5px 0 5px 5px;
+}
+
+.btn-file {
+    position: relative;
+    overflow: hidden;
+}
+.btn-file input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 100%;
+    min-height: 100%;
+    font-size: 100px;
+    text-align: right;
+    filter: alpha(opacity=0);
+    opacity: 0;
+    outline: none;
+    background: white;
+    cursor: inherit;
+    display: block;
+}
+
+p.label {
+    font-size: 25px;
+    line-height: 1;
+    padding: 3px;
+    margin-left: 10px;
+    color:#ECF0F1;
+}
